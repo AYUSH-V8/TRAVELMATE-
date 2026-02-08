@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TravelMate - Plan Your Trip</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #74ebd5, #9face6);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: #2c3e50;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    button {
+      background: #3498db;
+      color: #fff;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    .summary {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #f9f9f9;
+      border-radius: 10px;
+      display: none;
+    }
+    .summary h2 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+    ul {
+      margin: 0.5rem 0 1rem 1.5rem;
+    }
+    .highlight {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    .passenger-input {
+      margin-bottom: 1rem;
+    }
+    #passengerDetails {
+      border: 1px solid #ddd;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #f8f9fa;
+      margin-top: 1rem;
+    }
+
+    /* Loading screen */
+    #loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, #74ebd5, #9face6);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.6s ease;
+    }
+    #loader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .plane {
+      font-size: 5rem;
+      animation: fly 3s infinite linear;
+    }
+    @keyframes fly {
+      0% { transform: translateX(-150%) rotate(-10deg); }
+      50% { transform: translateX(150%) rotate(10deg); }
+      100% { transform: translateX(-150%) rotate(-10deg); }
+    }
+    #loader p {
+      font-size: 1.6rem;
+      margin-top: 1rem;
+      color: white;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+      font-weight: 600;
+    }
+
+    /* Thank you note */
+    .thank-you {
+      margin-top: 2.5rem;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+    .thank-you h3 {
+      margin: 0 0 0.8rem;
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Animation -->
+  <div id="loader">
+    <div class="plane">✈️</div>
+    <p>TravelMate is getting your dream trip ready...</p>
+  </div>
+
+  <header>
+    <h1>🌍 TravelMate</h1>
+    <p>Plan your dream trip with ease</p>
+  </header>
+
+  <div class="container">
+    <form id="travelForm">
+      <div class="form-group">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" required>
+      </div>
+      <div class="form-group">
+        <label for="mobile">Contact Number</label>
+        <input type="tel" id="mobile" required>
+      </div>
+      <div class="form-group">
+        <label for="numPeople">Number of Travelers</label>
+        <input type="number" id="numPeople" min="1" required>
+      </div>
+      <div id="passengerDetails" style="display: none;"></div>
+      <div class="form-group">
+        <label for="destination">Choose Destination</label>
+        <select id="destination" required>
+          <option value="">-- Select --</option>
+          <option value="Kolkata">Kolkata</option>
+          <option value="Delhi">Delhi</option>
+          <option value="Mumbai">Mumbai</option>
+          <option value="Jaipur">Jaipur</option>
+          <option value="Goa">Goa</option>
+          <option value="Bangalore">Bangalore</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="budget">Budget (Rs)</label>
+        <input type="number" id="budget" min="5000" max="1000000" required>
+      </div>
+      <div class="form-group">
+        <label for="duration">Duration (days)</label>
+        <input type="number" id="duration" min="1" max="365" required>
+      </div>
+      <div class="form-group">
+        <label for="startDate">Start Date</label>
+        <input type="date" id="startDate" required>
+      </div>
+      <button type="submit">Generate Trip Summary</button>
+    </form>
+
+    <div class="summary" id="summary">
+      <h2>🎉 Trip Summary</h2>
+      <p><strong>Name:</strong> <span id="sName"></span></p>
+      <p><strong>Contact:</strong> <span id="sMobile"></span></p>
+      <p><strong>Travelers:</strong> <span id="sPassengers"></span></p>
+      <p><strong>Destination:</strong> <span id="sDestination"></span></p>
+      <p><strong>Duration:</strong> <span id="sDuration"></span> days</p>
+      <p><strong>Budget:</strong> Rs <span id="sBudget"></span></p>
+      <p><strong>Estimated Cost/Day:</strong> Rs <span id="sCostPerDay"></span></p>
+      <p><strong>Travel Dates:</strong> <span id="sDates"></span></p>
+      <p class="highlight">Booking ID: <span id="sBookingId"></span></p>
+
+      <h3>🏛️ Popular Attractions</h3>
+      <ul id="sAttractions"></ul>
+
+      <h3>🏨 Recommended Hotels</h3>
+      <ul id="sHotels"></ul>
+
+      <h3>🍽️ Recommended Restaurants</h3>
+      <ul id="sRestaurants"></ul>
+
+      <!-- Thank you note -->
+      <div class="thank-you">
+        <h3>Thank You for Choosing TravelMate! 🌴✨</h3>
+        <p>Get ready for an epic adventure!<br>
+        We'll reach out soon to confirm your booking and finalize all the little details.<br>
+        Safe travels, legend — see you on the road! 🚀</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Hide loader after page load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loader').classList.add('hidden');
+        setTimeout(() => {
+          document.getElementById('loader').style.display = 'none';
+        }, 600);
+      }, 1400); // feel free to change delay
+    });
+
+    const destinations_db = {
+      "Kolkata": {
+        attractions: ["Victoria Memorial", "Science City", "Eden Gardens", "Eco Park"],
+        hotels: ["The Oberoi Grand", "ITC Royal Palace", "Taj Bengal", "The Hyatt Regency"],
+        restaurants: ["Peter Cat", "6 Ballygunge Place", "Flurys", "Mocambo"]
+      },
+      "Delhi": {
+        attractions: ["Red Fort", "India Gate", "Qutub Minar", "Lotus Temple", "Akshardham Temple"],
+        hotels: ["The Leela Palace", "ITC Maurya", "Taj Mahal Hotel", "The Imperial"],
+        restaurants: ["Karim's", "Indian Accent", "Bukhara", "Paranthe Wali Gali"]
+      },
+      "Mumbai": {
+        attractions: ["Gateway of India", "Marine Drive", "Elephanta Caves", "Juhu Beach"],
+        hotels: ["The Taj Mahal Palace", "Trident Nariman Point", "The Oberoi Mumbai", "JW Marriott"],
+        restaurants: ["Leopold Café", "Bademiya", "Trishna", "Cafe Mondegar"]
+      },
+      "Jaipur": {
+        attractions: ["Amber Fort", "Hawa Mahal", "City Palace", "Jantar Mantar"],
+        hotels: ["Rambagh Palace", "ITC Rajputana", "Fairmont Jaipur", "Oberoi Rajvilas"],
+        restaurants: ["Chokhi Dhani", "Peacock Rooftop Restaurant", "1135 AD", "Spice Court"]
+      },
+      "Goa": {
+        attractions: ["Baga Beach", "Calangute Beach", "Dudhsagar Waterfalls", "Fort Aguada"],
+        hotels: ["Taj Exotica", "The Leela Goa", "ITC Grand Goa", "Alila Diwa Goa"],
+        restaurants: ["Fisherman's Wharf", "Mum's Kitchen", "Thalassa", "Vinayak Family Restaurant"]
+      },
+      "Bangalore": {
+        attractions: ["Lalbagh Botanical Garden", "Cubbon Park", "Bangalore Palace", "Bannerghatta National Park"],
+        hotels: ["The Oberoi Bangalore", "ITC Gardenia", "Taj West End", "The Ritz-Carlton"],
+        restaurants: ["MTR (Mavalli Tiffin Rooms)", "Toit", "Koshy's", "Vidyarthi Bhavan"]
+      }
+    };
+
+    // Set minimum date to today
+    document.getElementById('startDate').min = new Date().toISOString().split('T')[0];
+
+    document.getElementById('numPeople').addEventListener('input', function() {
+      const num = parseInt(this.value);
+      const passengerDiv = document.getElementById('passengerDetails');
+     
+      if (num > 0) {
+        passengerDiv.style.display = 'block';
+        passengerDiv.innerHTML = '<h4>Passenger Details:</h4>';
+        for (let i = 1; i <= num; i++) {
+          passengerDiv.innerHTML += `
+            <div class="passenger-input">
+              <label>Passenger ${i} Name</label>
+              <input type="text" class="passengerName" required>
+            </div>`;
+        }
+      } else {
+        passengerDiv.style.display = 'none';
+      }
+    });
+
+    document.getElementById('travelForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const mobile = document.getElementById('mobile').value;
+      const destination = document.getElementById('destination').value;
+      const budget = parseInt(document.getElementById('budget').value);
+      const duration = parseInt(document.getElementById('duration').value);
+      const startDate = document.getElementById('startDate').value;
+     
+      const passengerInputs = document.getElementsByClassName('passengerName');
+      const passengerNames = Array.from(passengerInputs).map(input => input.value).join(', ');
+     
+      const costPerDay = Math.round(budget / duration);
+      const startDateObj = new Date(startDate);
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + duration - 1);
+      const bookingId = 'TM' + Math.floor(Math.random() * 1000000);
+     
+      document.getElementById('sName').textContent = name;
+      document.getElementById('sMobile').textContent = mobile;
+      document.getElementById('sPassengers').textContent = passengerNames;
+      document.getElementById('sDestination').textContent = destination;
+      document.getElementById('sDuration').textContent = duration;
+      document.getElementById('sBudget').textContent = budget.toLocaleString();
+      document.getElementById('sCostPerDay').textContent = costPerDay.toLocaleString();
+      document.getElementById('sDates').textContent = `${startDateObj.toLocaleDateString()} to ${endDate.toLocaleDateString()}`;
+      document.getElementById('sBookingId').textContent = bookingId;
+
+      const destinationData = destinations_db[destination];
+     
+      const attractionsUl = document.getElementById('sAttractions');
+      attractionsUl.innerHTML = '';
+      destinationData.attractions.forEach(attraction => {
+        attractionsUl.innerHTML += `<li>${attraction}</li>`;
+      });
+
+      const hotelsUl = document.getElementById('sHotels');
+      hotelsUl.innerHTML = '';
+      destinationData.hotels.forEach(hotel => {
+        hotelsUl.innerHTML += `<li>${hotel}</li>`;
+      });
+
+      const restaurantsUl = document.getElementById('sRestaurants');
+      restaurantsUl.innerHTML = '';
+      destinationData.restaurants.forEach(restaurant => {
+        restaurantsUl.innerHTML += `<li>${restaurant}</li>`;
+      });
+     
+      const summary = document.getElementById('summary');
+      summary.style.display = 'block';
+      summary.scrollIntoView({ behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
